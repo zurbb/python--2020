@@ -1,7 +1,7 @@
 import smtplib
 
-sender_email = "zurtrypython@gmail.com"
-rec_email = "idan.4tal@gmail.com"
+sender_email = "from.email"
+rec_email = "email.to send"
 password = input(str("please enter your password: "))
 message = "hey, waiting for the next level"
 
