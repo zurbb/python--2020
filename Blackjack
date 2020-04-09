@@ -1,0 +1,227 @@
+import random
+
+all_cards = []               # making a list that will be appended with all the card which the players get
+card_hand_computer = []      # only computer cards
+card_hand_user = []          # only user cards
+value_player_computer = []   # variable for the computer hand rank
+value_player_user = []       # variable for the player hand rank
+bet=0                        # variable for the bet (for each round)
+balance = 0                  # account balance of the player
+
+#lists for the ranks & suits (for randomly select card) and dic for the values
+
+suits = ('Hearts', 'Diamonds', 'Spades', 'Clubs')
+ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
+values = {'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5, 'Six': 6, 'Seven': 7, 'Eight': 8, 'Nine': 9, 'Ten': 10,
+          'Jack': 10,
+          'Queen': 10, 'King': 10, 'Ace': 11}
+
+
+
+class AccountUser():
+    """
+    account of the player, deposit & withdraw, makes a bet and add\take for winn\lose
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    def deposit(self, amount):
+        global balance
+        balance += amount
+
+    def withdraw(self, amount):
+        global balance
+        if amount <= balance:
+            balance -= amount
+        else:
+            print("error: you don't have enough money to withdraw \nyour balance is {}".format(balance))
+
+    def bet(self, value):
+        global bet
+        bet += value
+        return bet
+
+    def __str__(self):
+        return("{},\nyou now have {} in your account".format(self.name.capitalize(), balance))
+
+class UserHand():
+    """
+    class that making a player profile - which card he has and value of all his cards.
+    the functions would also use for knowing the player his cards
+    """
+    global card_hand_user
+
+    def __init__(self, card_ranks, card_suit):
+        self.card_ranks = card_ranks
+        self.card_suit = card_suit
+
+    def add_for_list(self):
+        card_hand_user.append((self.card_ranks, self.card_suit))  # update the list of cards
+        value_player_user.append(values[self.card_ranks])         # update the list of value_player_user (add the num not the sum)
+
+    def card_show(self):  # display the card for the user
+
+        for suit, rank in card_hand_user:
+            print("  " + suit + " " + rank)  #the first spacing is only for printing the cards in different pos
+
+    def value_card_player(self):  # evaluate the user cards value and update that in global
+        return sum(value_player_user)
+
+class ComputerHand():
+    """
+    class that making a  virtual computer player profile - the card hand & value
+    """
+
+    global card_hand_computer
+
+    def __init__(self, card_ranks, card_suit):
+        self.card_ranks = card_ranks
+        self.card_suit = card_suit
+
+    def add_for_list(self):
+        card_hand_computer.append((self.card_ranks, self.card_suit))
+        value_player_computer.append(values[self.card_ranks])
+
+    def _card_show(self, all_or_not):
+        #show all in the end of he round,  while round ongoing it's without the first card
+        if all_or_not == "yes":
+            for suit, rank in card_hand_computer:
+                print("  " + suit + " " + rank)
+        else:
+            for suit, rank in card_hand_computer[1:]:
+                print("  " + suit + " " + rank)
+
+
+    def value_card_player(self):
+        return sum(value_player_computer)
+
+def get_card(ranks, suits):
+    """
+   randomly select card rank & suits and check if the card is valid
+    """
+    global all_cards
+    give_card = (random.choice(ranks), random.choice(suits))
+    if give_card in all_cards:
+        pass
+    else:
+        all_cards.append(give_card)
+
+    return give_card[0], give_card[1]
+
+def main_game():
+    """
+    main game, its makes only one card each time for each player. also check for winner or busts
+    as well ask the player if want to bet\raise\hit\stay.
+    """
+    game = True
+    while game:
+
+        if balance ==0:  #In case the player has no money in the account
+            user_account.deposit(int(input("how much money do you want to deposit? :")))
+
+
+        rank, suit = get_card(ranks, suits)
+        computer = ComputerHand(rank, suit)
+        computer.add_for_list()
+        print("computer cards: ")
+        computer._card_show("no")
+
+        print("------")
+
+        rank, suit = get_card(ranks, suits)  # randomly select card with the get_card functions (wich ensure that the care is available)
+        user = UserHand(rank, suit)
+        user.add_for_list()
+        print("your cards: ")
+        user.card_show()
+
+
+        if user.value_card_player() > 21:
+            print("you are  bust!")
+            user_account.withdraw(bet)
+            break
+
+        if computer.value_card_player() > 21:
+            print("you won!\nthe computer is bust!")
+            user_account.deposit(bet)
+            break
+
+
+        bet_money = int(input("you now betting on {} how much do you want to raise".format(bet)))
+        while bet_money > balance:
+            bet_money = int(input("error: you have {} in your account  \nhow much do you want to raise".format(balance)))
+        user_account.bet(bet_money)
+
+        if input("\nstay or hit (s\h):") != "s":
+            if user.value_card_player() > computer.value_card_player():
+                print("computer cards:")
+                computer._card_show("yes")
+                print("-------\n")
+                print('you won!')
+                user_account.deposit(bet)
+                break
+
+
+            else:
+                print("computer cards:")
+                computer._card_show("yes")
+                print("-------\n")
+                print("you lost")
+                user_account.withdraw(bet)
+                break
+
+def another_game():
+    ask_for_more= input("\ndo you want to play again (y/n): ").lower()
+    while True:
+        global more ,all_cards , card_hand_computer ,card_hand_user , value_player_computer, value_player_user, bet
+
+        if ask_for_more == "y":
+
+            all_cards = []  # making a list that will be append with all the card wich the players get
+            card_hand_computer = []  # only computer cards
+            card_hand_user = []  # only user cards
+            value_player_computer = []  # attribute for the computer hand rank
+            value_player_user = []
+            bet = 0
+            more = True
+            break
+
+        elif ask_for_more == "n":
+            more = False
+            break
+
+        else:
+            continue
+
+
+if __name__=='__main__':
+
+    user_account = AccountUser(input("hello, \nwelcome to the game!\n what is your name: "))
+    user_account.deposit(int(input("how much money do you want to deposit? :")))
+
+    more = True
+    while more:
+
+        # for the first card (which not in the main game function):
+        rank, suit = get_card(ranks, suits)
+        card_hand_computer = [(rank, suit)]
+        value_player_computer.append(values[rank])
+
+        rank, suit = get_card(ranks, suits)
+        card_hand_user = [(rank, suit)]
+        value_player_user.append(values[rank])
+
+        main_game()
+        another_game()
+        print(user_account)
+
+    print("thanks for playing!")
+    if balance != 0:
+        user_account.withdraw(int(input("how much do you to withdraw?")))
+    print(user_account)
+    print("see you soon!")
+
+
+
+else:
+    pass
